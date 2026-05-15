@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.idea/
+.gradio/
+.sixth/
+*.pt
+*.pth
+models/
+xlmr-m4-vi-en/
