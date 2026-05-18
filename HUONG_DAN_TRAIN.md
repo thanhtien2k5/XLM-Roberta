@@ -1,6 +1,11 @@
 # Hướng dẫn huấn luyện & kết quả thực nghiệm
 
-Tài liệu mô tả cách huấn luyện mô hình **XLM-RoBERTa-base** phát hiện văn bản do máy sinh (Machine-Generated Text Detection) trên tập **M4**, cùng kết quả thực nghiệm đã chạy trên máy local.
+**Tiểu luận:** Nhận diện văn bản do máy sinh đa ngôn ngữ sử dụng XLM-RoBERTa  
+**Sinh viên:** Trần Thanh Tiến — MSSV: 4651050270  
+**Trường:** Đại học Quy Nhơn — Khoa Công nghệ Thông tin  
+**Học phần:** Xử lý Ngôn ngữ Tự nhiên  
+
+Tài liệu mô tả cách huấn luyện mô hình **XLM-RoBERTa-base** trên tập **M4** và **kết quả thực nghiệm chính thức** (lấy từ khóa luận + file CSV trong [`docs/ket_qua_khoa_luan/`](docs/ket_qua_khoa_luan/)).
 
 ---
 
@@ -66,19 +71,40 @@ python testgpu.py
 
 ## 3. Dữ liệu huấn luyện
 
-### 3.1. Thống kê tập M4 (đã kiểm tra)
+### 3.1. Tập M4 gốc (28 file `.jsonl`)
 
 | Chỉ số | Giá trị |
 |--------|---------|
-| Số file `.jsonl` | 28 |
 | Tổng mẫu hợp lệ | **67.963** |
 | Human | 1.780 (2,6%) |
 | Machine | 66.183 (97,4%) |
-| Độ dài text (ký tự) | min = 4, max = 14.807, **mean ≈ 1.691** |
+| Độ dài text (ký tự) | min = 4, max = 14.807, mean ≈ 1.691 |
 
-> **Lưu ý:** Dữ liệu **lệch lớp** nặng (Machine >> Human). Cần cân bằng hoặc dùng loss có trọng số khi train.
+> Dữ liệu gốc **lệch lớp** nặng. Trong khóa luận, sau bước lọc tiếng Việt/Anh và cân bằng, tập huấn luyện được thu gọn như bảng dưới.
 
-### 3.2. Domain & model nguồn
+### 3.2. Tập dữ liệu sau tiền xử lý (Bảng 3.1 — khóa luận)
+
+Nguồn: `docs/ket_qua_khoa_luan/31.csv`
+
+| Tập | Human (vi) | Machine (vi) | Human (en) | Machine (en) | Tổng |
+|-----|------------|--------------|------------|--------------|------|
+| Train | 8.000 | 8.000 | 16.000 | 16.000 | **48.000** |
+| Validation | 1.000 | 1.000 | 2.000 | 2.000 | **6.000** |
+| Test | 1.000 | 1.000 | 2.000 | 2.000 | **6.000** |
+| **Tổng** | **10.000** | **10.000** | **20.000** | **20.000** | **60.000** |
+
+### 3.3. Phân phối theo ngôn ngữ & generator (Bảng 3.2)
+
+Nguồn: `docs/ket_qua_khoa_luan/32.csv`
+
+| Ngôn ngữ | Generator | Human | Machine | Tổng |
+|----------|-----------|-------|---------|------|
+| English | ChatGPT | 8.000 | 8.000 | 16.000 |
+| English | Davinci + Others | 8.000 | 8.000 | 16.000 |
+| Vietnamese | ChatGPT, Davinci, Cohere, BLOOMz | 8.000 | 8.000 | 16.000 |
+| **Tổng** | — | **24.000** | **24.000** | **48.000** |
+
+### 3.4. Domain & model nguồn (M4 gốc)
 
 | Domain | Ví dụ file |
 |--------|------------|
@@ -120,13 +146,19 @@ python train_m4_xlmr.py --data_dir ../data --output_dir ../xlmr-m4-vi-en
 | `--max_length` | `256` | Độ dài token tối đa |
 | `--no_fp16` | — | Tắt mixed precision FP16 |
 
-**Siêu tham số cố định trong code:**
+**Siêu tham số (Bảng 3.3 — khóa luận):** xem `docs/ket_qua_khoa_luan/33.csv`
 
-- Learning rate: `2e-5`
-- Loss: Cross-Entropy có trọng số lớp `[1.0, 1.2]` (ưu tiên nhận diện Machine)
-- Chia dữ liệu: 80% train / 10% validation / 10% test
-- Early stopping: patience = 2 epoch
-- Metric chọn model tốt nhất: **F1 macro**
+| Siêu tham số | Giá trị |
+|--------------|---------|
+| Mô hình | `xlm-roberta-base` |
+| Learning rate | `2e-5` |
+| Effective batch size | 16 (accumulation = 4) |
+| Max sequence length | 256 |
+| Epochs | 3 (early stopping patience = 2) |
+| Optimizer | AdamW (weight decay = 0.01) |
+| Loss | Weighted CrossEntropy `[1.0, 1.2]` |
+| Mixed precision | FP16 |
+| Metric chọn best model | **F1-macro** |
 
 ### 4.2. Huấn luyện nâng cao — `train_m4_xlmr_final.py`
 
@@ -157,24 +189,63 @@ python train_m4_xlmr_final.py
 
 ---
 
-## 5. Kết quả thực nghiệm
+## 5. Kết quả thực nghiệm (khóa luận)
 
-### 5.1. Kết quả `train_m4_xlmr.py` (checkpoint tốt nhất)
+> Nguồn: file `TRƯỜNG ĐẠI HỌC QUY NHƠN.docx` và các bảng CSV trong [`docs/ket_qua_khoa_luan/`](docs/ket_qua_khoa_luan/).  
+> Môi trường: GPU **RTX 3060**, CUDA 11.8, HuggingFace Trainer.
 
-Huấn luyện trên GPU local, backbone **xlm-roberta-base**, 3 epoch, metric chọn theo **F1 macro** trên tập validation.
+### 5.1. Kết quả tổng thể — Bảng 4.1
 
-| Epoch | Accuracy (val) | **F1 macro (val)** | Loss (val) |
-|-------|----------------|---------------------|------------|
-| 1 | 99,62% | 87,91% | 0,023 |
-| 2 | 99,69% | 91,45% | 0,016 |
-| **3** | **99,73%** | **92,28%** | 0,017 |
+Nguồn: `docs/ket_qua_khoa_luan/41.csv` — đánh giá trên **tập test** (6.000 mẫu)
 
-**Checkpoint tốt nhất:** `global_step = 9576` (epoch 3)  
-**Đường dẫn model:** `xlmr-m4-vi-en/best_model/` (lưu local, không đẩy lên Git vì dung lượng lớn)
+| Chỉ số | Giá trị | Ghi chú |
+|--------|---------|---------|
+| **Accuracy** | **92,7%** | |
+| Precision (Machine) | 93,1% | |
+| Recall (Machine) | 92,3% | |
+| **F1-score (Macro)** | **92,7%** | Metric chính |
+| **AUC-ROC** | **0,973** | Rất cao |
 
-> Accuracy rất cao (~99,7%) phản ánh **mất cân bằng lớp** (dự đoán Machine cho hầu hết mẫu vẫn đúng). **F1 macro** là metric đáng tin cậy hơn trong bối cảnh này.
+### 5.2. Kết quả theo ngôn ngữ — Bảng 4.2
 
-### 5.2. Nhận xét định tính
+Nguồn: `docs/ket_qua_khoa_luan/42.csv`
+
+| Ngôn ngữ | Số mẫu | Accuracy | Precision | Recall | **F1** | AUC |
+|----------|--------|----------|-----------|--------|--------|-----|
+| English (en) | 4.000 | 94,6% | 94,9% | 94,4% | **94,7%** | 0,981 |
+| Vietnamese (vi) | 2.000 | 88,9% | 89,4% | 88,2% | **88,8%** | 0,952 |
+| **Overall** | 6.000 | 92,7% | 93,1% | 92,3% | **92,7%** | 0,973 |
+
+> Tiếng Anh vượt trội hơn tiếng Việt (~6 điểm F1), phù hợp với đặc thù low-resource và ít mẫu Human tiếng Việt trong M4.
+
+### 5.3. Ảnh hưởng độ dài văn bản — Bảng 4.3
+
+Nguồn: `docs/ket_qua_khoa_luan/43.csv`
+
+| Nhóm | Khoảng token | Số mẫu (xấp xỉ) | Accuracy | F1 |
+|------|--------------|-----------------|----------|-----|
+| Short | ≤ 128 | 1.500 | 88,1% | 87,4% |
+| Medium | 129 – 256 | 3.800 | 94,1% | 93,8% |
+| Long (truncated) | > 256 | 700 | 94,8% | 94,5% |
+
+> Văn bản ngắn khó phân loại hơn; độ dài trung bình–dài cho F1 tốt nhất.
+
+### 5.4. So sánh với nghiên cứu trước — Bảng 4.4
+
+Nguồn: `docs/ket_qua_khoa_luan/44.csv`
+
+| Nghiên cứu / Mô hình | Ngôn ngữ | F1-score |
+|----------------------|----------|----------|
+| RoBERTa-base (Wang et al., 2024) | English only | 0,89 – 0,94 |
+| XLM-RoBERTa (AraGenEval 2025) | Arabic | 0,770 |
+| **XLM-RoBERTa-base (khóa luận)** | **Vi + En** | **0,927** |
+| RoBERTa-large (một số nghiên cứu) | English | ~0,96 |
+
+### 5.5. Log huấn luyện (tham khảo thêm)
+
+Trong quá trình train `train_m4_xlmr.py`, F1 macro trên **validation** đạt **92,28%** ở epoch 3 (accuracy val ~99,7% do lệch lớp). Con số **92,7% F1 trên test** (mục 5.1) là kết quả báo cáo chính thức trong khóa luận.
+
+### 5.6. Nhận xét định tính
 
 | Khía cạnh | Quan sát |
 |-----------|----------|
@@ -183,7 +254,7 @@ Huấn luyện trên GPU local, backbone **xlm-roberta-base**, 3 epoch, metric c
 | **Human tiếng Anh học thuật** | Văn phong trang trọng — đôi khi bị over-predict Machine |
 | **Cải thiện** | Dùng `train_m4_xlmr_final.py` (Focal Loss + cân bằng 1:2) để tăng recall lớp Human |
 
-### 5.3. Đánh giá & vẽ biểu đồ sau train
+### 5.7. Đánh giá & vẽ biểu đồ sau train
 
 ```bash
 cd codetrain
@@ -213,7 +284,7 @@ DATA_DIR = "../data"
 | `figure_4_2_roc_curve.png` | Đường ROC + AUC |
 | `figure_4_3_f1_by_lang.png` | F1 so sánh tiếng Việt / tiếng Anh |
 
-### 5.4. Giao diện demo (Gradio)
+### 5.8. Giao diện demo (Gradio)
 
 ```bash
 cd codetrain
@@ -256,6 +327,7 @@ XLM-Roberta/
 ├── xlmr-m4-vi-en/                # (local) checkpoint & best_model
 │   └── best_model/
 ├── best_model_final/              # (local) output train_m4_xlmr_final.py
+├── docs/ket_qua_khoa_luan/        # Bảng CSV kết quả khóa luận (31–44)
 ├── requirements.txt
 ├── README.md
 └── HUONG_DAN_TRAIN.md             # File này
@@ -294,4 +366,4 @@ python train_m4_xlmr.py --data_dir ../data --output_dir ../xlmr-m4-vi-en
 python predict.py --model_path ../xlmr-m4-vi-en/best_model --text "Your text here"
 ```
 
-**Kết quả chính (train_m4_xlmr.py, epoch 3):** F1 macro validation = **92,28%**, Accuracy validation = **99,73%**.
+**Kết quả chính (tập test, khóa luận):** F1 macro = **92,7%**, Accuracy = **92,7%**, AUC-ROC = **0,973**.

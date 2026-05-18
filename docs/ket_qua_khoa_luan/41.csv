@@ -1,0 +1,6 @@
+Chỉ số,Giá trị,Ghi chú
+Accuracy,0.927,92.7%
+Precision (Machine),0.931,-
+Recall (Machine),0.923,-
+F1-score (Macro),0.927,Metric chính
+AUC-ROC,0.973,Rất cao

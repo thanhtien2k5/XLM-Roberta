@@ -1,0 +1,4 @@
+Ngôn ngữ,Số mẫu,Accuracy,Precision,Recall,F1-score,AUC
+English (en),4.000,0.946,0.949,0.944,0.947,0.981
+Vietnamese (vi),2.000,0.889,0.894,0.882,0.888,0.952
+Overall,6.000,0.927,0.931,0.923,0.927,0.973

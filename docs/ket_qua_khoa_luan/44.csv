@@ -1,0 +1,5 @@
+Nghiên cứu / Mô hình,Ngôn ngữ,F1-score,Ghi chú
+"RoBERTa-base (Wang et al., 2024)",English only,0.89–0.94,Baseline M4
+XLM-RoBERTa (AraGenEval 2025),Arabic,0.770,Thấp hơn
+XLM-RoBERTa-base (Khóa luận),Vietnamese + English,0.927,"Đa ngôn ngữ, đa domain"
+RoBERTa-large (một số nghiên cứu),English,~0.96,Cao hơn nhưng đơn ngữ

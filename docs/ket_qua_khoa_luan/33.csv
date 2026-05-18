@@ -1,0 +1,10 @@
+Siêu tham số,Giá trị,Lý do chọn
+Mô hình,xlm-roberta-base,"125M tham số, hỗ trợ đa ngôn ngữ tốt"
+Learning rate,2e-5,Giá trị tối ưu sau thử nghiệm
+Effective batch size,16,Gradient accumulation = 4
+Max sequence length,256,Cân bằng giữa hiệu suất và VRAM
+Số epoch,3,Early stopping patience = 2
+Optimizer,AdamW,weight decay = 0.01
+Loss function,Weighted CrossEntropy,"Trọng số [1.0, 1.2] cho lớp Machine"
+Mixed Precision,FP16,Tiết kiệm VRAM trên RTX 3060
+Metric đánh giá best model,F1-macro,Công bằng giữa hai lớp

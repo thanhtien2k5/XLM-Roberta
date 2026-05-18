@@ -23,16 +23,19 @@ cd codetrain
 python train_m4_xlmr.py --data_dir ../data --output_dir ../xlmr-m4-vi-en
 ```
 
-## Kết quả thực nghiệm (tóm tắt)
+## Kết quả thực nghiệm (tóm tắt — khóa luận)
 
-Huấn luyện `train_m4_xlmr.py`, 3 epoch, backbone `xlm-roberta-base`:
+Đánh giá trên tập **test** (6.000 mẫu), mô hình `xlm-roberta-base`:
 
-| Metric | Validation (epoch 3) |
-|--------|----------------------|
-| **F1 macro** | **92,28%** |
-| Accuracy | 99,73% |
+| Metric | Giá trị |
+|--------|---------|
+| **F1 macro** | **92,7%** |
+| Accuracy | 92,7% |
+| AUC-ROC | 0,973 |
+| F1 tiếng Anh | 94,7% |
+| F1 tiếng Việt | 88,8% |
 
-Chi tiết siêu tham số, biểu đồ đánh giá, xử lý lỗi và pipeline nâng cao (`train_m4_xlmr_final.py`): xem **[HUONG_DAN_TRAIN.md](HUONG_DAN_TRAIN.md)**.
+Chi tiết bảng số liệu, siêu tham số, hướng dẫn train: **[HUONG_DAN_TRAIN.md](HUONG_DAN_TRAIN.md)** · CSV: [`docs/ket_qua_khoa_luan/`](docs/ket_qua_khoa_luan/).
 
 ## Dữ liệu
 

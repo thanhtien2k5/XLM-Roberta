@@ -1,0 +1,4 @@
+Nhóm độ dài,Khoảng token,Số mẫu (xấp xỉ),Accuracy,F1-score
+Short,≤ 128,1.500,0.881,0.874
+Medium,129 – 256,3.800,0.941,0.938
+Long (truncated),> 256,700,0.948,0.945
